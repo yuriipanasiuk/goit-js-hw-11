@@ -3,7 +3,8 @@ import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import { getPhoto } from './axiosPhoto';
 
-export const page = 1;
+export let page = 1;
+export let per_page = 40;
 
 const refs = {
   form: document.querySelector('#search-form'),
@@ -15,6 +16,7 @@ refs.form.addEventListener('submit', onSearchImage);
 refs.loadMoreBtn.addEventListener('click', onLoadMore);
 
 function onLoadMore() {
+  per_page += 1;
   clearPage();
   const inputValue = '';
   request(inputValue);
@@ -43,9 +45,9 @@ async function onSearchImage(e) {
   }, 2000);
 }
 
-function request(r) {
+function request(response) {
   try {
-    getPhoto(r).then(renderPhoto);
+    getPhoto(response).then(renderPhoto);
   } catch (onError) {
     console.error(error);
   }

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { page, per_page } from '.';
+import { page, per_page } from './index';
 const API_KEY = '29525266-43f22ff86b92049909965975c';
 
 const BASE_URL = `https://pixabay.com/api/?key=${API_KEY}&q=`;
@@ -10,6 +10,7 @@ export async function getPhoto(name) {
     page,
     per_page,
   });
+
   let resolve = await axios.get(
     `${BASE_URL}${name}${FILTER_RESPONSE}${params}`
   );
