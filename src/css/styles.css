@@ -3,6 +3,7 @@
   flex-wrap: wrap;
   margin-left: -30px;
   justify-content: center;
+  margin-bottom: 70px;
 }
 
 .photo-card {
@@ -36,12 +37,13 @@ body {
   max-width: 1200px;
   padding-left: 15px;
   padding-right: 15px;
+
   margin-left: auto;
   margin-right: auto;
 }
 
 .search-form {
-  background-color: blue;
+  background-color: rgb(46, 46, 160);
 }
 
 p {
@@ -56,7 +58,23 @@ p {
 
 .load-more {
   display: none;
+  margin-bottom: 50px;
+  width: 200px;
+  height: 40px;
+  border-radius: 5px;
+  border: none;
+  font-size: 16px;
+  background-color: rgb(46, 46, 160);
+  color: white;
+  cursor: pointer;
+  /* transition: color 250ms cubic-bezier(0.075, 0.82, 0.165, 1);
+  transition: background-color 250ms cubic-bezier(0.075, 0.82, 0.165, 1); */
 }
+
+/* .load-more:hover {
+  background-color: rgb(198, 218, 159);
+  color: rgb(46, 46, 160);
+} */
 
 .show-button {
   display: block;

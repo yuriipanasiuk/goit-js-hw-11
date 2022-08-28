@@ -2,10 +2,9 @@ import './css/styles.css';
 import { Notify } from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import { getPhoto } from './axiosPhoto';
+import GetPhoto from './axiosPhoto';
 
-export let page = 1;
-export let per_page = 40;
+const getPhoto = new GetPhoto();
 
 const refs = {
   form: document.querySelector('#search-form'),
@@ -14,66 +13,61 @@ const refs = {
 };
 
 refs.form.addEventListener('submit', onSearchImage);
-refs.loadMoreBtn.addEventListener('click', onLoadMore);
+refs.loadMoreBtn.addEventListener('click', onRequest);
 
-function onLoadMore() {
-  per_page += 1;
-  clearPage();
-  const inputValue = '';
-  request(inputValue);
-}
+let timerId = '';
+let totalPictures = 0;
 
 async function onSearchImage(e) {
   e.preventDefault();
 
-  clearPage();
-  // page = 1;
+  getPhoto.query = e.currentTarget.elements.searchQuery.value.trim();
+  getPhoto.resetPage();
 
-  const form = e.currentTarget;
-  const searchQuery = form.elements.searchQuery.value.trim();
-  inputValue = searchQuery;
-
-  if (!searchQuery) {
-    return clearPage();
+  if (getPhoto.query === '') {
+    Notify.warning('input is empty');
+    return;
   }
 
-  request(searchQuery);
+  onRequest();
+  clearPage();
 
-  e.currentTarget.reset();
-
-  setTimeout(() => {
+  timerId = setTimeout(() => {
     refs.loadMoreBtn.classList.add('show-button');
   }, 2000);
+
+  e.currentTarget.reset();
 }
 
-function request(response) {
+function onRequest() {
   try {
-    getPhoto(response).then(renderPhoto);
-  } catch (onError) {
-    console.error(error);
+    getPhoto.fetchArticle().then(renderPhoto);
+  } catch (error) {
+    console.log('error');
   }
-}
-
-function onError() {
-  Notify.failure(
-    'Sorry, there are no images matching your search query. Please try again.'
-  );
-}
-
-function clearPage() {
-  refs.galleryBox.innerHTML = '';
 }
 
 function renderPhoto(data) {
+  // const totalImages = data.totalHits;
+  // setTimeout(() => {
+  //   Notify.success(`Hooray! We found ${totalImages} images.`);
+  // }, 1000);
   makeGallary(data);
 }
-
+//під час повернення даних тотал завжди 500, потрібно щось зробити(скопіювати значення) і від нього віднімати
 function makeGallary(data) {
   const imageArgs = data.hits;
+  const totalImages = data.totalHits;
+
   if (imageArgs.length === 0) {
     onError();
     return;
   }
+
+  setTimeout(() => {
+    Notify.success(`Hooray! We found ${totalImages} images.`);
+  }, 1000);
+
   const markup = imageArgs.reduce(
     (acc, image) =>
       acc +
@@ -98,8 +92,26 @@ function makeGallary(data) {
     ''
   );
 
-  refs.galleryBox.innerHTML = markup;
+  refs.galleryBox.insertAdjacentHTML('beforeend', markup);
   createLiteBox();
+}
+
+function onError() {
+  Notify.failure(
+    'Sorry, there are no images matching your search query. Please try again.'
+  );
+  clearTimeout(timerId);
+  refs.loadMoreBtn.classList.remove('show-button');
+  return;
+}
+
+function clearPage() {
+  refs.galleryBox.innerHTML = '';
+}
+
+function theEndOfGallary() {
+  Notify.failure("We're sorry, but you've reached the end of search results.");
+  refs.loadMoreBtn.classList.remove('show-button');
 }
 
 function createLiteBox() {
