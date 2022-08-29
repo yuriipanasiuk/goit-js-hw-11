@@ -12,11 +12,11 @@ const refs = {
   loadMoreBtn: document.querySelector('.load-more'),
 };
 
-refs.form.addEventListener('submit', onSearchImage);
-refs.loadMoreBtn.addEventListener('click', onRequest);
-
 let timerId = '';
-let totalPictures = 0;
+let totalHits = '';
+
+refs.form.addEventListener('submit', onSearchImage);
+refs.loadMoreBtn.addEventListener('click', onSearchMore);
 
 async function onSearchImage(e) {
   e.preventDefault();
@@ -30,6 +30,7 @@ async function onSearchImage(e) {
   }
 
   onRequest();
+  totalImageMessage();
   clearPage();
 
   timerId = setTimeout(() => {
@@ -38,35 +39,31 @@ async function onSearchImage(e) {
 
   e.currentTarget.reset();
 }
+function onSearchMore() {
+  onRequest();
+  const countPerPage = getPhoto.counterImages();
+
+  if (countPerPage >= totalHits) {
+    atTheEndOfGallary();
+  }
+}
 
 function onRequest() {
   try {
-    getPhoto.fetchArticle().then(renderPhoto);
+    getPhoto.fetchArticle().then(makeGallary);
   } catch (error) {
     console.log('error');
   }
 }
 
-function renderPhoto(data) {
-  // const totalImages = data.totalHits;
-  // setTimeout(() => {
-  //   Notify.success(`Hooray! We found ${totalImages} images.`);
-  // }, 1000);
-  makeGallary(data);
-}
-//під час повернення даних тотал завжди 500, потрібно щось зробити(скопіювати значення) і від нього віднімати
 function makeGallary(data) {
   const imageArgs = data.hits;
-  const totalImages = data.totalHits;
+  totalHits = data.totalHits;
 
-  if (imageArgs.length === 0) {
+  if (totalHits === 0) {
     onError();
     return;
   }
-
-  setTimeout(() => {
-    Notify.success(`Hooray! We found ${totalImages} images.`);
-  }, 1000);
 
   const markup = imageArgs.reduce(
     (acc, image) =>
@@ -109,7 +106,7 @@ function clearPage() {
   refs.galleryBox.innerHTML = '';
 }
 
-function theEndOfGallary() {
+function atTheEndOfGallary() {
   Notify.failure("We're sorry, but you've reached the end of search results.");
   refs.loadMoreBtn.classList.remove('show-button');
 }
@@ -117,4 +114,10 @@ function theEndOfGallary() {
 function createLiteBox() {
   let gallery = new SimpleLightbox('.gallery a');
   gallery.refresh;
+}
+
+function totalImageMessage() {
+  setTimeout(() => {
+    Notify.success(`Hooray! We found ${totalHits} images.`);
+  }, 500);
 }
