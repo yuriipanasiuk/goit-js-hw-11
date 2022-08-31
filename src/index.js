@@ -4,6 +4,8 @@ import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import GetPhoto from './axiosPhoto';
 import throttle from 'lodash.throttle';
+import { createLiteBox } from './liteBox';
+import { smoothScroll } from './smoothScroll';
 
 const getPhoto = new GetPhoto();
 
@@ -13,11 +15,9 @@ const refs = {
   loadMoreBtn: document.querySelector('.load-more'),
 };
 
-let timerId = '';
-
 refs.form.addEventListener('submit', onSearchImage);
-refs.loadMoreBtn.addEventListener('click', onSearchMore);
-addEventListener('scroll', throttle(onScroll, 250));
+refs.loadMoreBtn.addEventListener('click', onRequest);
+// addEventListener('scroll', throttle(onScroll, 250));
 
 function onSearchImage(e) {
   e.preventDefault();
@@ -29,51 +29,31 @@ function onSearchImage(e) {
     Notify.warning('input is empty');
     return;
   }
-
-  onRequest().then(response => {
-    makeGallary(response);
-    const totalImage = response.totalHits;
-
-    if (response.totalHits === 0) {
-      onError();
-      return;
-    }
-
-    if (getPhoto.page === 2) {
-      totalImageMessage(totalImage);
-    }
-  });
-
-  timerId = setTimeout(() => {
-    showButton();
-  }, 2000);
-
+  hideButton();
   clearPage();
+  onRequest();
 
   e.currentTarget.reset();
 }
 
-function onSearchMore() {
-  onRequest().then(makeGallary);
-  const countPerPage = getPhoto.counterImages();
-
-  if (countPerPage >= totalHits) {
-    atTheEndOfGallary();
-  }
-}
+// function onSearchMore() {
+//   onRequest();
+// }
 
 async function onRequest() {
   try {
-    return await getPhoto.fetchArticle();
+    const res = await getPhoto.fetchArticle();
+    makeGallary(res);
+    notification(res);
   } catch (error) {
-    console.log('error');
+    console.log(error);
   }
 }
 
-function makeGallary(data) {
-  const { hits } = data;
-  // totalHits = data.totalHits;
-
+function makeGallary({ hits }) {
+  if (hits !== 0) {
+    smoothScroll();
+  }
   const markup = hits.reduce(
     (acc, image) =>
       acc +
@@ -107,8 +87,7 @@ function onError() {
     'Sorry, there are no images matching your search query. Please try again.'
   );
   hideButton();
-  clearTimeout(timerId);
-
+  clearPage();
   return;
 }
 
@@ -117,24 +96,32 @@ function clearPage() {
 }
 
 function atTheEndOfGallary() {
-  Notify.failure("We're sorry, but you've reached the end of search results.");
   hideButton();
-  removeEventListener('scroll', onScroll);
+  Notify.failure("We're sorry, but you've reached the end of search results.");
+
+  // removeEventListener('scroll', onScroll);
 }
 
-function createLiteBox() {
-  let gallery = new SimpleLightbox('.gallery a');
-  gallery.refresh;
-}
+function notification(res) {
+  const totalPage = Math.ceil(res.totalHits / getPhoto.per_page);
 
-function totalImageMessage(total) {
-  Notify.success(`Hooray! We found ${total} images.`);
+  if (res.totalHits === 0) {
+    onError();
+    return;
+  } else if (getPhoto.page === 2) {
+    Notify.success(`Hooray! We found ${res.totalHits} images.`);
+    setTimeout(() => {
+      showButton();
+    }, 500);
+  } else if (getPhoto.page > totalPage) {
+    atTheEndOfGallary();
+  }
 }
 
 function onScroll() {
   const documentRect = document.documentElement.getBoundingClientRect();
   if (documentRect.bottom <= document.documentElement.clientHeight + 150) {
-    onSearchMore();
+    onRequest();
   }
 }
 
