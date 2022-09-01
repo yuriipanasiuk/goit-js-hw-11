@@ -1,4 +1,4 @@
-export function createLiteBox() {
-  let gallery = new SimpleLightbox('.gallery a');
-  gallery.refresh;
-}
+// export function createLiteBox() {
+//   let gallery = new SimpleLightbox('.gallery a');
+//   return gallery.refresh;
+// }

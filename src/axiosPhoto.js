@@ -9,7 +9,6 @@ export default class GetPhoto {
     this.searchQuery = '';
     this.page = 1;
     this.per_page = 40;
-    this.imageCounter = this.per_page;
   }
 
   async fetchArticle() {
@@ -27,10 +26,6 @@ export default class GetPhoto {
 
   incrementPage() {
     this.page += 1;
-  }
-
-  counterImages() {
-    return (this.imageCounter += this.per_page);
   }
 
   resetPage() {
