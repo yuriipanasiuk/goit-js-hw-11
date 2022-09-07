@@ -1,14 +1,11 @@
 import './css/styles.css';
+import GetPhoto from './axiosPhoto';
+import showUpBtn from './btnUp';
+import { refs } from './refs';
+
 import { Notify } from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import GetPhoto from './axiosPhoto';
-
-const refs = {
-  form: document.querySelector('#search-form'),
-  galleryBox: document.querySelector('.gallery'),
-  loadMoreBtn: document.querySelector('.load-more'),
-};
 
 const getPhoto = new GetPhoto();
 let gallery = new SimpleLightbox('.gallery a');
@@ -26,8 +23,10 @@ function onSearchImage(e) {
     Notify.warning('input is empty');
     return;
   }
+
   hideButton();
   clearPage();
+  showUpBtn();
 
   setTimeout(() => {
     onRequest().then(smoothScroll);
@@ -88,7 +87,6 @@ function smoothScroll() {
 }
 
 function onScroll() {
-  addEventListener('scroll', onScroll);
   hideButton();
 
   const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
@@ -144,18 +142,3 @@ function onError() {
   clearPage();
   return;
 }
-
-$(document).ready(function () {
-  $(window).scroll(function () {
-    if ($(this).scrollTop() > 100) {
-      $('.scrollup').fadeIn();
-    } else {
-      $('.scrollup').fadeOut();
-    }
-  });
-
-  $('.scrollup').click(function () {
-    $('html, body').animate({ scrollTop: 0 }, 600);
-    return false;
-  });
-});
